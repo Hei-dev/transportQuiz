@@ -15,19 +15,24 @@ function randint(a,b){
 
 function guessRoute(){
     routeData = jsonData[randint(0,jsonData.length-1)];
+    console.log(routeData)
     setTimeout(newStop,2000)
-    const routeType = randint(0,routeData.rstop.length-1)
+    var routeType = randint(0,routeData.rstop.length-1)
     function newStop(){
         if(!guessedRight){
             setTimeout(newStop,2000);
         }
-        let rstops = routeData.rstop
+        let rstops = routeData.rstop;
+        //Check for empty rstops (usually in CTB/NWFB)
+        while(rstops[routeType].features.length==0){
+            routeType = randint(0,routeData.rstop.length-1)
+        }
         document.getElementById("stopNames").innerHTML += "<br>" + rstops[routeType].features[randint(0,rstops[routeType].features.length-1)].properties.stopNameC
     }
 }
 
 function checkCorrectRoute(){
-    guessedRight = document.getElementById("routeName").value;
+    guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
     if(guessedRight){
         document.getElementById("corrMsg").innerHTML = "Correct!";
         document.getElementById("corrMsg").style.color = "Green";
