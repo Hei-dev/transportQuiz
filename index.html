@@ -5,17 +5,27 @@
         <meta charset="utf-8">
         <title>HK Transport Quiz</title>
         <script src="canvas.js"></script>
+        <link rel="stylesheet" href="darkMode.css">
     </head>
     <Style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+        }
         #stopNames{
             font-size: larger;
         }
+        #routeStopGuess{
+            position: fixed;
+            background-color: transparent;
+        }
     </Style>
     <body>
+        <div id="routeStopGuess">
+            <input id="routeName" placeholder="Guess the Route Number Here!">
+            <button onclick="checkCorrectRoute()">Submit</button>
+            <label id="corrMsg">Loading</label><br>
+        </div>
         
-        <input id="routeName" placeholder="Guess the Route Number Here!">
-        <button onclick="checkCorrectRoute()">Submit</button>
-        <label id="corrMsg">Loading</label><br>
         <div id="canvDiv"></div>
         <button onclick="showAns()">Show Answer</button>
         <div id="stopNames"></div>

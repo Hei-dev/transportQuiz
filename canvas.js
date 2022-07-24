@@ -187,8 +187,8 @@ class jsCanvas{
         this.can2d.save();
         this.can2d.translate(x, y);
         this.can2d.rotate(Math.PI/(360/a));
-        this.can2d.textAlign = "center";
-        this.can2d.fillText(text, x, 0);
+        this.can2d.textAlign = "left";
+        this.can2d.fillText(text, 0, 0);
         this.can2d.restore();
     }
 }

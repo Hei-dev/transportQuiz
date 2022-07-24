@@ -10,6 +10,11 @@ fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r
     guessRoute()
 })
 
+//Dark mode config
+if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    c.cele.style.backgroundColor = "black"
+}
+
 function randint(a,b){
     return Math.floor(Math.random()*(b - a + 1) ) + a;
 }
@@ -32,7 +37,14 @@ function guessRoute(){
         }
         const curStopName = rstops[routeType].features[randint(0,rstops[routeType].features.length-1)].properties.stopNameC
         c.can2d.font = randint(25,75) + "px sans-serif";
-        c.drawTextAtAngel(curStopName,randint(200,c.can2d.canvas.width-200),randint(0,c.can2d.canvas.height-200),randint(0,360))
+        if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+            c.can2d.fillStyle = "white"
+        }
+        let angel = randint(0,360)
+        let x = randint(0,c.can2d.canvas.width)
+        let y = randint(0,c.can2d.canvas.height)
+        console.log(x + "," + y + "-" + angel)
+        c.drawTextAtAngel(curStopName,x,y,angel)
         document.getElementById("stopNames").innerHTML += "<br>" + curStopName
     }
 }
@@ -40,7 +52,7 @@ function guessRoute(){
 function checkCorrectRoute(){
     guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
     if(guessedRight){
-        document.getElementById("corrMsg").innerHTML = "Correct!";
+        document.getElementById("corrMsg").innerHTML = "Correct! Refresh this page for new route";
         document.getElementById("corrMsg").style.color = "Green";
     }
     else{
