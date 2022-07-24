@@ -1,5 +1,6 @@
 var jsonData;
 var guessedRight;
+var ansRevealed = false;
 var c = new jsCanvas(document.getElementById("canvDiv"))
 fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r => r.json()).then(function(data){
     jsonData = data;
@@ -21,7 +22,7 @@ function guessRoute(){
     //Choose route type
     var routeType = randint(0,routeData.rstop.length-1)
     function newStop(){
-        if(!guessedRight){
+        if(!(guessedRight || ansRevealed)){
             setTimeout(newStop,2000);
         }
         let rstops = routeData.rstop;
@@ -46,4 +47,9 @@ function checkCorrectRoute(){
         document.getElementById("corrMsg").innerHTML = "Wrong!";
         document.getElementById("corrMsg").style.color = "Red";
     }
+}
+
+function showAns(){
+    alert("The answer is " + routeData.routeNameC)
+    ansRevealed = true
 }
