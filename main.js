@@ -2,6 +2,13 @@ var jsonData;
 var guessedRight;
 var ansRevealed = false;
 var c = new jsCanvas(document.getElementById("canvDiv"))
+var textSizeMod
+if(window.outerWidth<600){
+    textSizeMod = 2.5
+}
+else{
+    textSizeMod = 1
+}
 fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r => r.json()).then(function(data){
     jsonData = data;
     document.getElementById("corrMsg").innerHTML = "Loading completed. Starting the game...";
@@ -36,12 +43,12 @@ function guessRoute(){
             routeType = randint(0,routeData.rstop.length-1)
         }
         const curStopName = rstops[routeType].features[randint(0,rstops[routeType].features.length-1)].properties.stopNameC
-        c.can2d.font = randint(25,75) + "px sans-serif";
+        c.can2d.font = (randint(25,75)/textSizeMod) + "px sans-serif";
         if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
             c.can2d.fillStyle = "white"
         }
         let angel = randint(0,360)
-        let x = randint(0,c.can2d.canvas.width)
+        let x = randint(0,c.can2d.canvas.width-25)
         let y = randint(0,c.can2d.canvas.height)
         console.log(x + "," + y + "-" + angel)
         c.drawTextAtAngel(curStopName,x,y,angel)
