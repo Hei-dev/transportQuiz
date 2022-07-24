@@ -4,7 +4,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="utf-8">
         <title>HK Transport Quiz</title>
-        <script src=""></script>
+        <script src="canvas.js"></script>
     </head>
     <Style>
         #stopNames{
@@ -12,10 +12,11 @@
         }
     </Style>
     <body>
-        <div id="canvDiv"></div>
+        
         <input id="routeName" placeholder="Guess the Route Number Here!">
         <button onclick="checkCorrectRoute()">Answer</button>
-        <label id="corrMsg">Loading</label>
+        <label id="corrMsg">Loading</label><br>
+        <div id="canvDiv"></div>
         <div id="stopNames"></div>
     </body>
     <script src="main.js"></script>
