@@ -18,15 +18,23 @@
             position: fixed;
             background-color: transparent;
         }
+        .translucent_bg{
+            /*background-color: #FFFFFF7F;*/
+            background-color: #FFFFFF;
+        }
     </Style>
     <body>
         <div id="routeStopGuess">
-            <input id="routeName" placeholder="Guess the Route Number Here!">
-            <button onclick="checkCorrectRoute()">Submit</button>
+            <input id="routeName" class="translucent_bg" placeholder="Guess the Route Number Here!">
+            <button onclick="checkCorrectRoute()" class="translucent_bg">Submit</button><br>
+            <label id="hintMsg"></label><br>
             <label id="corrMsg">Loading</label><br>
         </div>
         
         <div id="canvDiv"></div>
+        <button id="showSuffix" onclick="showSuffix()">Show Suffix</button>
+        <button id="showPrefix" onclick="showPrefix()">Show Prefix</button>
+        <button id="showCodeLen" onclick="showCodeLen()">Show Route No. Length</button>
         <button onclick="showAns()">Show Answer</button>
         <div id="stopNames"></div>
     </body>

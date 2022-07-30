@@ -2,20 +2,125 @@ var jsonData;
 var guessedRight;
 var ansRevealed = false;
 var c = new jsCanvas(document.getElementById("canvDiv"))
-var textSizeMod
+var textSizeMod;
+
+var cacheJsonData;
+
+//Open indexedDB
+//NOTE Change to jsonTransitData for actual release
+const dbName = "debugTransitData"
+var idxReq = indexedDB.open(dbName,2)
+var isUpdating = false;
+
 if(window.outerWidth<600){
     textSizeMod = 2.5
 }
 else{
     textSizeMod = 1
 }
-fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r => r.json()).then(function(data){
-    jsonData = data;
+
+// Load data from json
+idxReq.onsuccess = function(){
+    let db = idxReq.result;
+
+    console.log("Successfully connected", db.objectStoreNames.contains('busJson'))
+
+    /*if (!db.objectStoreNames.contains('busJson')) { // Check for object store
+        //idxReq.deleteObjectStore("busJson")
+        if(!isUpdating){
+            indexedDB.deleteDatabase(dbName)
+            alert("Failed to load local routes data. Press OK to clear cached data and retry (No object store!)");
+            location.reload();
+            return
+        }
+    //}*/
+    if(!isUpdating){
+        getTransactData(db)
+    }
+}
+
+function updateData(db){
+    console.log("bvgfdgv")
+    isUpdating = true;
+    fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r => r.json()
+    ).then(function(data){
+        //const dataStr = JSON.stringify(data)
+        transactData(db,data,"bus")
+        //console.log(dataStr.length/2)
+        loadComplete(data);
+    });
+}
+
+// Load data from data.gov.hk
+idxReq.onupgradeneeded = function(){
+    let db = idxReq.result;
+    if (!db.objectStoreNames.contains('busJson')) { // Check for object store
+        db.createObjectStore('busJson', {keyPath: 'type'});
+    }
+    updateData(db)
+}
+
+function transactData(db,jsonDataStore,type_){
+    let tJson = db.transaction("busJson", "readwrite").objectStore("busJson");
+
+    let datas = {
+        type: type_,
+        date: new Date(),
+        data: jsonDataStore
+    };
+    
+    let t_req = tJson.add(datas);
+    
+    t_req.onsuccess = function() {
+        console.log("Data added", t_req.result);
+    };
+    
+    t_req.onerror = function() {
+        console.log("Error: ", t_req.error);
+    };
+}
+
+function getTransactData(db){
+    try{
+        var tJson = db.transaction("busJson", "readwrite").objectStore("busJson"); 
+    }
+    catch(e){
+        indexedDB.deleteDatabase(dbName)
+
+        alert("Failed to load local routes data. Press OK to clear cached data and retry");
+        location.reload();
+        return
+    }
+    let get_req = tJson.get("bus")
+
+    get_req.onerror = function(){
+        indexedDB.deleteDatabase(dbName)
+
+        alert("Failed to load local routes data. Press OK to clear cached data and retry (Failed to load data)");
+        location.reload();
+
+    }
+
+    get_req.onsuccess = function(){
+        console.log(get_req.result)
+        if(get_req.result===undefined){
+            indexedDB.deleteDatabase(dbName)
+
+            alert("Failed to load local routes data. Press OK to clear cached data and retry (Data is undefined)");
+            location.reload();
+        }
+        loadComplete(get_req.result.data)
+    }    
+}
+
+
+function loadComplete(d){
+    jsonData = d;
     document.getElementById("corrMsg").innerHTML = "Loading completed. Starting the game...";
-    console.log("Loading completed")
+    console.log("Loading completed");
     //TODO  Temp trigger, implement a more permanent method
-    guessRoute()
-})
+    guessRoute();
+}
 
 //Dark mode config
 if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
@@ -59,7 +164,7 @@ function guessRoute(){
 function checkCorrectRoute(){
     guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
     if(guessedRight){
-        document.getElementById("corrMsg").innerHTML = "Correct! Refresh this page for new route";
+        document.getElementById("corrMsg").innerHTML = "Correct! Refresh this page for new route (question)";
         document.getElementById("corrMsg").style.color = "Green";
     }
     else{
@@ -67,8 +172,42 @@ function checkCorrectRoute(){
         document.getElementById("corrMsg").style.color = "Red";
     }
 }
+document.getElementById("routeName").onkeyup = function(evt){
+    if(evt.key=="Enter"){
+        checkCorrectRoute()
+    }
+}
 
 function showAns(){
     alert("The answer is " + routeData.routeNameC)
     ansRevealed = true
+    document.getElementById("corrMsg").innerHTML = "Refresh this page for new route (question) "
+}
+
+function isLetter(ch) {
+    return ch.length === 1 && ch.match(/[a-z]/i);
+}
+
+function showSuffix(){
+    if(isLetter(routeData.routeNameC.slice(routeData.routeNameC.length-1))){
+        document.getElementById("hintMsg").innerHTML += "Suffix (Last character): " + routeData.routeNameC.slice(routeData.routeNameC.length-1) + "<br>"
+    }
+    else{
+        document.getElementById("hintMsg").innerHTML += "No suffix " + "<br>"
+    }
+    document.getElementById("showSuffix").style.display = "none"
+}
+function showPrefix(){
+    if(isLetter(routeData.routeNameC.slice(0))){
+        document.getElementById("hintMsg").innerHTML += "Prefix (Last character): " + routeData.routeNameC.slice(0) + "<br>"
+    }
+    else{
+        document.getElementById("hintMsg").innerHTML += "No Prefix " + "<br>"
+    }
+    document.getElementById("showPrefix").style.display = "none"
+}
+
+function showCodeLen(){
+    document.getElementById("hintMsg").innerHTML += " Route Length:" + routeData.routeNameC.length + "<br>"
+    document.getElementById("showCodeLen").style.display = "none"
 }
