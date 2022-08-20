@@ -8,7 +8,7 @@ var cacheJsonData;
 
 //Open indexedDB
 //NOTE Change to jsonTransitData for actual release
-const dbName = "debugTransitData"
+const dbName = "jsonTransitData"
 var idxReq = indexedDB.open(dbName,2)
 var isUpdating = false;
 
@@ -40,7 +40,7 @@ idxReq.onsuccess = function(){
 }
 
 function updateData(db){
-    console.log("bvgfdgv")
+    //console.log("bvgfdgv")
     isUpdating = true;
     fetch("https://static.data.gov.hk/td/routes-fares-geojson/JSON_BUS.json").then(r => r.json()
     ).then(function(data){
@@ -109,8 +109,10 @@ function getTransactData(db){
             alert("Failed to load local routes data. Press OK to clear cached data and retry (Data is undefined)");
             location.reload();
         }
+        //console.log(get_req.result.date)
+        document.getElementById("lastFetch").innerHTML = "Database fetched at: " + get_req.result.date
         loadComplete(get_req.result.data)
-    }    
+    }
 }
 
 
@@ -210,4 +212,10 @@ function showPrefix(){
 function showCodeLen(){
     document.getElementById("hintMsg").innerHTML += " Route Length:" + routeData.routeNameC.length + "<br>"
     document.getElementById("showCodeLen").style.display = "none"
+}
+
+function deleteDatabaseAndReload(){
+    indexedDB.deleteDatabase(dbName)
+
+    location.reload();
 }
