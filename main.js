@@ -164,7 +164,7 @@ function guessRoute(){
 }
 
 function checkCorrectRoute(){
-    guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
+    guessedRight = document.getElementById("routeName").value.toUpperCase()==routeData.routeNameC;
     if(guessedRight){
         document.getElementById("corrMsg").innerHTML = "Correct! Refresh this page for new route (question)";
         document.getElementById("corrMsg").style.color = "Green";
