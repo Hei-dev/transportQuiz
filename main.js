@@ -173,7 +173,7 @@ function guessRoute(){
 }
 
 function checkCorrectRoute(){
-    guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
+    guessedRight = document.getElementById("routeName").value.toUpperCase()==routeData.routeNameC;
     if(guessedRight){
         document.getElementById("corrMsg").innerHTML = "Correct! " + newQuestionBtn;
         document.getElementById("corrMsg").style.color = "Green";
