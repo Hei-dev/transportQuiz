@@ -22,24 +22,43 @@
             /*background-color: #FFFFFF7F;*/
             background-color: #FFFFFF;
         }
+        #title{
+            text-align: center;
+        }
     </Style>
     <body>
-        <div id="routeStopGuess">
-            <input id="routeName" class="translucent_bg" placeholder="Guess the Route Number Here!">
-            <button onclick="checkCorrectRoute()" class="translucent_bg">Submit</button><br>
-            <label id="hintMsg"></label><br>
-            <label id="corrMsg">Loading</label><br>
+        <div id="title">
+            Guess The route number based on<br>
+            the stop names shown on screen!<br>
+            <br>
+            <label id="loadMsg">Loading</label><br>
+            <br>
+            <button id="gameStart" onclick="guessRoute()" disabled>Start Game!</button><br>
+            <button onclick="deleteDatabaseAndReload()">Update Database</button>
+            <div id="lastFetch"></div><br>
+        </div>
+
+        <div id="playarea" style="display:none ">
+            <div id="routeStopGuess">
+                <input id="routeName" class="translucent_bg" placeholder="Guess the Route Number Here!">
+                <button onclick="checkCorrectRoute()" class="translucent_bg">Submit</button><br>
+                <label id="hintMsg"></label><br>
+                <label id="corrMsg"></label><br>
+            </div>
+            
+            <!--Make reversed blank area-->
+            <div><br><br></div>
+
+            <div id="canvDiv"></div>
+            <button id="showSuffix" onclick="showSuffix()">Show Suffix</button>
+            <button id="showPrefix" onclick="showPrefix()">Show Prefix</button>
+            <button id="showCodeLen" onclick="showCodeLen()">Show Route No. Length</button>
+            <button onclick="showAns()">Show Answer</button>
+            <br>
+            Text only version:
+            <div id="stopNames"></div>
         </div>
         
-        <div id="canvDiv"></div>
-        <button id="showSuffix" onclick="showSuffix()">Show Suffix</button>
-        <button id="showPrefix" onclick="showPrefix()">Show Prefix</button>
-        <button id="showCodeLen" onclick="showCodeLen()">Show Route No. Length</button>
-        <button onclick="showAns()">Show Answer</button>
-        <br>
-        <button onclick="deleteDatabaseAndReload()">Update Database</button>
-        <div id="lastFetch"></div><br>
-        <div id="stopNames"></div>
     </body>
     <script src="main.js"></script>
 </html>

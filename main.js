@@ -12,6 +12,8 @@ const dbName = "jsonTransitData"
 var idxReq = indexedDB.open(dbName,2)
 var isUpdating = false;
 
+const newQuestionBtn = "<button onclick='restart()'>New Question!</button>"
+
 if(window.outerWidth<600){
     textSizeMod = 2.5
 }
@@ -118,10 +120,11 @@ function getTransactData(db){
 
 function loadComplete(d){
     jsonData = d;
-    document.getElementById("corrMsg").innerHTML = "Loading completed. Starting the game...";
+    document.getElementById("loadMsg").innerHTML = "Loading completed.";
+    document.getElementById("gameStart").disabled = false
     console.log("Loading completed");
     //TODO  Temp trigger, implement a more permanent method
-    guessRoute();
+    //guessRoute();
 }
 
 //Dark mode config
@@ -134,6 +137,12 @@ function randint(a,b){
 }
 
 function guessRoute(){
+    document.getElementById("title").style.display = "none"
+    document.getElementById("playarea").style.display = "inline-block"
+
+    guessedRight = false
+    ansRevealed = false
+
     routeData = jsonData[randint(0,jsonData.length-1)];
     console.log(routeData)
     //Start the timer
@@ -166,7 +175,7 @@ function guessRoute(){
 function checkCorrectRoute(){
     guessedRight = document.getElementById("routeName").value==routeData.routeNameC;
     if(guessedRight){
-        document.getElementById("corrMsg").innerHTML = "Correct! Refresh this page for new route (question)";
+        document.getElementById("corrMsg").innerHTML = "Correct! " + newQuestionBtn;
         document.getElementById("corrMsg").style.color = "Green";
     }
     else{
@@ -183,15 +192,15 @@ document.getElementById("routeName").onkeyup = function(evt){
 function showAns(){
     alert("The answer is " + routeData.routeNameC)
     ansRevealed = true
-    document.getElementById("corrMsg").innerHTML = "Refresh this page for new route (question) "
+    document.getElementById("corrMsg").innerHTML = newQuestionBtn
 }
 
-function isLetter(ch) {
-    return ch.length === 1 && ch.match(/[a-z]/i);
+function isLetter_(ch) {
+    return ch.length === 1 && ch.match(/[A-Z]/i);
 }
 
 function showSuffix(){
-    if(isLetter(routeData.routeNameC.slice(routeData.routeNameC.length-1))){
+    if(isLetter_(routeData.routeNameC.slice(routeData.routeNameC.length-1))){
         document.getElementById("hintMsg").innerHTML += "Suffix (Last character): " + routeData.routeNameC.slice(routeData.routeNameC.length-1) + "<br>"
     }
     else{
@@ -200,8 +209,8 @@ function showSuffix(){
     document.getElementById("showSuffix").style.display = "none"
 }
 function showPrefix(){
-    if(isLetter(routeData.routeNameC.slice(0))){
-        document.getElementById("hintMsg").innerHTML += "Prefix (Last character): " + routeData.routeNameC.slice(0) + "<br>"
+    if(isLetter_(routeData.routeNameC.slice(0,1))){
+        document.getElementById("hintMsg").innerHTML += "Prefix (Last character): " + routeData.routeNameC.slice(0,1) + "<br>"
     }
     else{
         document.getElementById("hintMsg").innerHTML += "No Prefix " + "<br>"
@@ -218,4 +227,15 @@ function deleteDatabaseAndReload(){
     indexedDB.deleteDatabase(dbName)
 
     location.reload();
+}
+
+function restart(){
+    c.can2d.clearRect(0, 0, c.can2d.canvas.width, c.can2d.canvas.height);
+    document.getElementById("hintMsg").innerHTML = ""
+    document.getElementById("corrMsg").innerHTML = ""
+    document.getElementById("showSuffix").style.display = "inline"
+    document.getElementById("showPrefix").style.display = "inline"
+    document.getElementById("showCodeLen").style.display = "inline"
+    document.getElementById("stopNames").innerHTML = ""
+    guessRoute()
 }
