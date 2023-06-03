@@ -1,10 +1,14 @@
-var jsonData;
+var jsonData = {
+    "routeList" : []
+};
 var guessedRight;
 var ansRevealed = false;
 var c = new jsCanvas(document.getElementById("canvDiv"))
 var textSizeMod;
 
 var cacheJsonData;
+
+var rstops;
 
 //Open indexedDB
 //NOTE Change to jsonTransitData for actual release
@@ -21,7 +25,7 @@ else{
     textSizeMod = 1
 }
 
-// Load data from json
+// Load data from indexdb json
 idxReq.onsuccess = function(){
     let db = idxReq.result;
 
@@ -41,6 +45,7 @@ idxReq.onsuccess = function(){
     }
 }
 
+// Update data from data.gov.hk
 function updateData(db){
     //console.log("bvgfdgv")
     isUpdating = true;
@@ -53,7 +58,7 @@ function updateData(db){
     });
 }
 
-// Load data from data.gov.hk
+// Load / Update data from data.gov.hk
 idxReq.onupgradeneeded = function(){
     let db = idxReq.result;
     if (!db.objectStoreNames.contains('busJson')) { // Check for object store
@@ -62,6 +67,7 @@ idxReq.onupgradeneeded = function(){
     updateData(db)
 }
 
+// Process data and stores it into the db
 function transactData(db,jsonDataStore,type_){
     let tJson = db.transaction("busJson", "readwrite").objectStore("busJson");
 
@@ -119,12 +125,25 @@ function getTransactData(db){
 
 
 function loadComplete(d){
-    jsonData = d;
+    //Post-process to group each data into respective routes
+    for(const stopData of d.features){
+        if(jsonData[stopData.properties.routeNameC]===undefined){
+            jsonData[stopData.properties.routeNameC] = {};
+            jsonData.routeList.push(stopData.properties.routeNameC)
+        }
+        if(jsonData[stopData.properties.routeNameC][stopData.properties.routeType]===undefined){
+            jsonData[stopData.properties.routeNameC][stopData.properties.routeType] = [];
+        }
+        jsonData[stopData.properties.routeNameC][stopData.properties.routeType].push(stopData.properties);
+        
+    }
+    //jsonData = d;
     document.getElementById("loadMsg").innerHTML = "Loading completed.";
     document.getElementById("gameStart").disabled = false
     console.log("Loading completed");
     //TODO  Temp trigger, implement a more permanent method
     //guessRoute();
+    console.log(d)
 }
 
 //Dark mode config
@@ -143,22 +162,24 @@ function guessRoute(){
     guessedRight = false
     ansRevealed = false
 
-    routeData = jsonData[randint(0,jsonData.length-1)];
+    routeData = jsonData[jsonData.routeList[randint(0,jsonData.routeList.length-1)]];
     console.log(routeData)
     //Start the timer
     setTimeout(newStop,2000)
     //Choose route type
-    var routeType = randint(0,routeData.rstop.length-1)
+    var routeType = Object.keys(routeData)[randint(0,Object.keys(routeData).length-1)];
     function newStop(){
         if(!(guessedRight || ansRevealed)){
             setTimeout(newStop,2000);
         }
-        let rstops = routeData.rstop;
+        //console.log(routeData)
+        rstops = routeData[routeType];
         //Check for empty rstops (usually in CTB/NWFB)
-        while(rstops[routeType].features.length==0){
+        while(rstops.length==0){
             routeType = randint(0,routeData.rstop.length-1)
         }
-        const curStopName = rstops[routeType].features[randint(0,rstops[routeType].features.length-1)].properties.stopNameC
+        console.log(rstops[randint(0,rstops.length-1)])
+        const curStopName = rstops[randint(0,rstops.length-1)].stopNameC
         c.can2d.font = (randint(25,75)/textSizeMod) + "px sans-serif";
         if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
             c.can2d.fillStyle = "white"
@@ -173,7 +194,7 @@ function guessRoute(){
 }
 
 function checkCorrectRoute(){
-    guessedRight = document.getElementById("routeName").value.toUpperCase()==routeData.routeNameC;
+    guessedRight = document.getElementById("routeName").value.toUpperCase()==rstops[0].routeNameC;
     if(guessedRight){
         document.getElementById("corrMsg").innerHTML = "Correct! " + newQuestionBtn;
         document.getElementById("corrMsg").style.color = "Green";
@@ -190,7 +211,7 @@ document.getElementById("routeName").onkeyup = function(evt){
 }
 
 function showAns(){
-    alert("The answer is " + routeData.routeNameC)
+    alert("The answer is " + rstops[0].routeNameC)
     ansRevealed = true
     document.getElementById("corrMsg").innerHTML = newQuestionBtn
 }
@@ -200,8 +221,8 @@ function isLetter_(ch) {
 }
 
 function showSuffix(){
-    if(isLetter_(routeData.routeNameC.slice(routeData.routeNameC.length-1))){
-        document.getElementById("hintMsg").innerHTML += "Suffix (Last character): " + routeData.routeNameC.slice(routeData.routeNameC.length-1) + "<br>"
+    if(isLetter_(rstops[0].routeNameC.slice(rstops[0].routeNameC.length-1))){
+        document.getElementById("hintMsg").innerHTML += "Suffix (Last character): " + rstops[0].routeNameC.slice(rstops[0].routeNameC.length-1) + "<br>"
     }
     else{
         document.getElementById("hintMsg").innerHTML += "No suffix " + "<br>"
@@ -209,8 +230,8 @@ function showSuffix(){
     document.getElementById("showSuffix").style.display = "none"
 }
 function showPrefix(){
-    if(isLetter_(routeData.routeNameC.slice(0,1))){
-        document.getElementById("hintMsg").innerHTML += "Prefix (Last character): " + routeData.routeNameC.slice(0,1) + "<br>"
+    if(isLetter_(rstops[0].routeNameC.slice(0,1))){
+        document.getElementById("hintMsg").innerHTML += "Prefix (Last character): " + rstops[0].routeNameC.slice(0,1) + "<br>"
     }
     else{
         document.getElementById("hintMsg").innerHTML += "No Prefix " + "<br>"
@@ -219,7 +240,7 @@ function showPrefix(){
 }
 
 function showCodeLen(){
-    document.getElementById("hintMsg").innerHTML += " Route Length:" + routeData.routeNameC.length + "<br>"
+    document.getElementById("hintMsg").innerHTML += " Route Length:" + rstops[0].routeNameC.length + "<br>"
     document.getElementById("showCodeLen").style.display = "none"
 }
 
